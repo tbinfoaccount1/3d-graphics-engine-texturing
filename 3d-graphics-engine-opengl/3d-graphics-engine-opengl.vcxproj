@@ -71,20 +71,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(SolutionDir)\SDL3-3.4.16\include;$(SolutionDir)\glew-2.3.1\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\SDL3-3.4.16\lib\x64;$(SolutionDir)\glew-2.3.1\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\KTX-Software\include;$(SolutionDir)\SDL3-3.4.16\include;$(SolutionDir)\glew-2.3.1\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\KTX-Software\lib;$(SolutionDir)\SDL3-3.4.16\lib\x64;$(SolutionDir)\glew-2.3.1\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(SolutionDir)\SDL3-3.4.16\include;$(SolutionDir)\glew-2.3.1\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\SDL3-3.4.16\lib\x64;$(SolutionDir)\glew-2.3.1\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\KTX-Software\include;$(SolutionDir)\SDL3-3.4.16\include;$(SolutionDir)\glew-2.3.1\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\KTX-Software\lib;$(SolutionDir)\SDL3-3.4.16\lib\x64;$(SolutionDir)\glew-2.3.1\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\SDL3-3.4.16\include;$(SolutionDir)\glew-2.3.1\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\SDL3-3.4.16\lib\x64;$(SolutionDir)\glew-2.3.1\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\KTX-Software\include;$(SolutionDir)\SDL3-3.4.16\include;$(SolutionDir)\glew-2.3.1\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\KTX-Software\lib;$(SolutionDir)\SDL3-3.4.16\lib\x64;$(SolutionDir)\glew-2.3.1\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)\SDL3-3.4.16\include;$(SolutionDir)\glew-2.3.1\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)\SDL3-3.4.16\lib\x64;$(SolutionDir)\glew-2.3.1\lib\Release\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\KTX-Software\include;$(SolutionDir)\SDL3-3.4.16\include;$(SolutionDir)\glew-2.3.1\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)\KTX-Software\lib;$(SolutionDir)\SDL3-3.4.16\lib\x64;$(SolutionDir)\glew-2.3.1\lib\Release\x64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -98,7 +98,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL3_image.lib;SDL3.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ktx.lib;SDL3_image.lib;SDL3.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -118,7 +118,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL3_image.lib;SDL3.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ktx.lib;SDL3_image.lib;SDL3.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -136,7 +136,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL3_image.lib;SDL3.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ktx.lib;SDL3_image.lib;SDL3.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\C++ libraries\glew-2.3.1\lib\Release\x64;C:\C++ libraries\SDL3-3.4.16\lib\x64;C:\C++ libraries\SDL3_image-3.4.6\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Manifest>
@@ -157,7 +157,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>SDL3_image.lib;SDL3.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ktx.lib;SDL3_image.lib;SDL3.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>

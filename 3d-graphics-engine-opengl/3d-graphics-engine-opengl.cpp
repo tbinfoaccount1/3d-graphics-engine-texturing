@@ -1,4 +1,4 @@
-// 3D graphics engine OpenGL variant
+// 3D graphics engine OpenGL met geoptimaliseerde texturing
 
 #define GLEW_STATIC
 #include <string>
@@ -73,6 +73,10 @@ bool init()
             GLenum glewErrorCode = glewInit();
             if (GLEW_OK != glewErrorCode) {
                 std::cerr << "GLEW init error: " << glewGetErrorString(glewErrorCode) << "\n";
+            }
+            if (!GLEW_ARB_texture_compression_bptc)
+            {
+                std::cout << "BC7 texture compression niet ondersteund.\n";
             }
 
             // Z-buffer
@@ -261,21 +265,55 @@ int main(int argc, char* args[])
             // Maak een GL texture aan op basis van de diffuse texture van het materiaal
             glGenTextures(1, &textureIDs[m]);
             glBindTexture(GL_TEXTURE_2D, textureIDs[m]);
-            if (m < materials.size() && !materials[m].diffuseTexture.isEmpty())
+            if (m < materials.size() &&
+                !materials[m].diffuseTexture.isEmpty())
             {
-                // Als het materiaal een diffuse texture heeft, upload de pixels naar OpenGL
+				// Als het materiaal een diffuse texture heeft, upload de pixels naar OpenGL
                 const Texture& tex = materials[m].diffuseTexture;
-                // 32bit RGBA
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.pixels.data());
+                GLenum internalFormat;
+
+                switch (tex.format)
+                {
+                    // Kies juiste format
+                case TextureFormat::BC7:
+                    internalFormat = GL_COMPRESSED_RGBA_BPTC_UNORM;
+                    break;
+
+                case TextureFormat::BC7_SRGB:
+                    internalFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
+                    break;
+                }
+
+                for (int level = 0; level < static_cast<int>(tex.mipLevels.size()); ++level)
+                {
+                    // Mipmapping levels
+                    int width = std::max(1, tex.width >> level);
+                    int height = std::max(1, tex.height >> level);
+
+                    const auto& mip = tex.mipLevels[level];
+
+                    glCompressedTexImage2D(
+                        GL_TEXTURE_2D,
+                        level,
+                        internalFormat,
+                        width,
+                        height,
+                        0,
+                        static_cast<GLsizei>(mip.size()),
+                        mip.data()
+                    );
+                }
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             }
             else
             {
-                // Witte pixel als er geen texture is
+                // Anders witte pixel
                 unsigned char white[4] = { 255, 255, 255, 255 };
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
+
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
             }
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             std::cout << "Texture aangemaakt met id: " << std::to_string(textureIDs[m]) << "\n";
@@ -283,21 +321,55 @@ int main(int argc, char* args[])
             // Maak een GL texture aan op basis van de heightmap texture van het materiaal
             glGenTextures(1, &heightMapTextureIDs[m]);
             glBindTexture(GL_TEXTURE_2D, heightMapTextureIDs[m]);
-            if (m < materials.size() && !materials[m].bumpTexture.isEmpty())
+            if (m < materials.size() &&
+                !materials[m].bumpTexture.isEmpty())
             {
-                // Als het materiaal een heightmap texture heeft, upload de pixels naar OpenGL
+                // Als het materiaal een bump texture heeft, upload de pixels naar OpenGL
                 const Texture& tex = materials[m].bumpTexture;
-                // 32bit RGBA
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.pixels.data());
+                GLenum internalFormat;
+
+                switch (tex.format)
+                {
+                    // kies juiste format
+                case TextureFormat::BC7:
+                    internalFormat = GL_COMPRESSED_RGBA_BPTC_UNORM;
+                    break;
+
+                case TextureFormat::BC7_SRGB:
+                    internalFormat = GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM;
+                    break;
+                }
+
+                for (int level = 0; level < static_cast<int>(tex.mipLevels.size()); ++level)
+                {
+                    // Mipmapping levels
+                    int width = std::max(1, tex.width >> level);
+                    int height = std::max(1, tex.height >> level);
+
+                    const auto& mip = tex.mipLevels[level];
+
+                    glCompressedTexImage2D(
+                        GL_TEXTURE_2D,
+                        level,
+                        internalFormat,
+                        width,
+                        height,
+                        0,
+                        static_cast<GLsizei>(mip.size()),
+                        mip.data()
+                    );
+                }
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             }
             else
             {
-                // Witte pixel als er geen texture is
-                unsigned char white[4] = { 255, 255, 255, 255 };
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
+				// Anders grijze pixel
+                unsigned char gray[4] = { 128, 128, 128, 255 };
+
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, gray);
             }
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             std::cout << "Texture aangemaakt met id: " << std::to_string(textureIDs[m]) << "\n";

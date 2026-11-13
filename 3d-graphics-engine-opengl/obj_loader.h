@@ -2,15 +2,29 @@
 #include <string>
 #include <vector>
 #include <glm.hpp>
+#include <ktx.h>
+
+enum class TextureFormat
+{
+	RGBA8,
+	BC7,
+	BC7_SRGB
+};
 
 struct Texture
 {
-	int width{ 0 };
-	int height{ 0 };
+	int width = 0;
+	int height = 0;
 
-	std::vector<uint32_t> pixels;
+	TextureFormat format = TextureFormat::BC7;
 
-	bool isEmpty() const { return pixels.empty(); }
+	// Elke texture bevat mip levels die elk hun eigen pixels bevatten
+	std::vector<std::vector<uint8_t>> mipLevels;
+
+	bool isEmpty() const
+	{
+		return mipLevels.empty();
+	}
 };
 
 struct Material

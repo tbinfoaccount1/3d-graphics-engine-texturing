@@ -3,6 +3,11 @@
 #include <SDL3/SDL_image.h>
 #include <filesystem>
 #include <glm.hpp>
+#include <ktx.h>
+#include <cstdint>
+#include <stdexcept>
+#include <string>
+#include <limits>
 
 #include "obj_loader.h"
 
@@ -79,26 +84,130 @@ void calculateTangents(ObjData& objData)
 
 Texture loadTexture(const std::string& filename)
 {
-	SDL_Surface* surface = IMG_Load(filename.c_str());
-	if (!surface)
-	{
-		throw std::runtime_error("Could not load texture: '" + filename + "': " + std::string(SDL_GetError()));
-	}
-
-	SDL_Surface* convertedSurface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
-	SDL_DestroySurface(surface);
-	if (!convertedSurface)
-	{
-		throw std::runtime_error("Could not convert texture: '" + filename + "': " + std::string(SDL_GetError()));
-	}
-
 	Texture texture;
-	texture.width = convertedSurface->w;
-	texture.height = convertedSurface->h;
-	texture.pixels.resize(texture.width * texture.height);
 
-	std::memcpy(texture.pixels.data(), convertedSurface->pixels, texture.pixels.size() * sizeof(uint32_t));
-	SDL_DestroySurface(convertedSurface);
+	ktxTexture2* ktxTex = nullptr;
+
+	// laad KTX2 bestand
+	KTX_error_code result = ktxTexture2_CreateFromNamedFile(
+		filename.c_str(),
+		KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT,
+		&ktxTex
+	);
+
+	if (result != KTX_SUCCESS)
+	{
+		throw std::runtime_error(
+			"Could not load KTX2 texture: " + filename
+		);
+	}
+
+	// Kijk of het het juiste type is (2D texture)
+	if (ktxTex->numDimensions != 2 ||
+		ktxTex->isArray ||
+		ktxTex->numFaces != 1 ||
+		ktxTex->numLayers != 1)
+	{
+		ktxTexture2_Destroy(ktxTex);
+
+		throw std::runtime_error(
+			"KTX2 texture type verkeerd: " + filename
+		);
+	}
+
+	// Kijk of de texture transcoding nodig heeft
+	if (ktxTexture2_NeedsTranscoding(ktxTex))
+	{
+		ktxTexture2_Destroy(ktxTex);
+
+		throw std::runtime_error(
+			"KTX2 texture requires transcoding: " + filename
+		);
+	}
+
+	// Kijk naar het formaat van BC7
+	switch (static_cast<uint32_t>(ktxTex->vkFormat))
+	{
+	case 145:
+		texture.format = TextureFormat::BC7;
+		break;
+
+	case 146:
+		texture.format = TextureFormat::BC7_SRGB;
+		break;
+
+	default:
+		ktxTexture2_Destroy(ktxTex);
+
+		throw std::runtime_error(
+			"Texture is not BC7 compressed: " + filename
+		);
+	}
+
+	texture.width = static_cast<int>(ktxTex->baseWidth);
+	texture.height = static_cast<int>(ktxTex->baseHeight);
+
+	// Krijg image data
+	ktxTexture* baseTexture =
+		reinterpret_cast<ktxTexture*>(ktxTex);
+
+	const ktx_uint8_t* data = ktxTexture_GetData(baseTexture);
+	const ktx_size_t dataSize = ktxTexture_GetDataSize(baseTexture);
+
+	// Mipmap levels ophalen
+	for (ktx_uint32_t level = 0;
+		level < ktxTex->numLevels;
+		++level)
+	{
+		ktx_size_t offset = 0;
+
+		result = ktxTexture2_GetImageOffset(
+			ktxTex,
+			level,
+			0,
+			0,
+			&offset
+		);
+
+		if (result != KTX_SUCCESS)
+		{
+			ktxTexture2_Destroy(ktxTex);
+
+			throw std::runtime_error(
+				"Could not retrieve mipmap offset: " + filename
+			);
+		}
+
+		const ktx_size_t mipWidth =
+			std::max(1u, ktxTex->baseWidth >> level);
+
+		const ktx_size_t mipHeight =
+			std::max(1u, ktxTex->baseHeight >> level);
+
+		// Bereken grootte op basis van formule uitgelegd in verslag
+		const ktx_size_t blocksX = (mipWidth + 3) / 4;
+		const ktx_size_t blocksY = (mipHeight + 3) / 4;
+
+		const ktx_size_t levelSize = blocksX * blocksY * 16;
+
+		// Niet buiten image data lezen
+		if (offset > dataSize || levelSize > dataSize - offset)
+		{
+			ktxTexture2_Destroy(ktxTex);
+
+			throw std::runtime_error(
+				"Invalid mipmap data: " + filename
+			);
+		}
+
+		// Mipmap data opslaan in texture struct
+		texture.mipLevels.emplace_back(
+			data + offset,
+			data + offset + levelSize
+		);
+	}
+	ktxTexture2_Destroy(ktxTex);
+
 	return texture;
 }
 
