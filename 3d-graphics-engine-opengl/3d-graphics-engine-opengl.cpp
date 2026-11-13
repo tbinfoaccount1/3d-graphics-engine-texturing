@@ -82,6 +82,8 @@ bool init()
             // Z-buffer
             glEnable(GL_DEPTH_TEST);
             glDepthFunc(GL_LESS);
+
+            glEnable(GL_FRAMEBUFFER_SRGB); //sRGB gamma correctie
         }
     }
 
